@@ -13,9 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-/**
- * Created by zwfang on 2017/3/13.
- */
 
 public class DownLoadListAdapter extends RecyclerView.Adapter {
 

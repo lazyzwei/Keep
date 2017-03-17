@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Keep.iml" filepath="$PROJECT_DIR$/Keep.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/keeplib/keeplib.iml" filepath="$PROJECT_DIR$/keeplib/keeplib.iml" />
     </modules>
   </component>
 </project>

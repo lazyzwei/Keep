@@ -7,9 +7,7 @@ import android.widget.ProgressBar;
 
 import com.obito.keep.R;
 
-/**
- * Created by zwfang on 2017/3/13.
- */
+
 
 public class ItemViewHolder extends RecyclerView.ViewHolder {
 
