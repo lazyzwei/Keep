@@ -8,10 +8,10 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class KeepDBHelper extends SQLiteOpenHelper {
 
     private static final int DB_VERSION = 1;
-    private static final String DB_NAME = "keep.db";
-    private static final String TASK_TABLE_NAME = "keep_task";
+    public static final String DB_NAME = "keep.db";
+    public static final String TASK_TABLE_NAME = "keep_task";
 
-    interface Properties {
+    public interface Properties {
         String ID = "_id";
         String URL = "_url";
         String LOCAL_PATH = "_local_path";
@@ -45,6 +45,11 @@ public class KeepDBHelper extends SQLiteOpenHelper {
 
     public KeepDBHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
         super(context, DB_NAME, factory, DB_VERSION);
+    }
+
+    public KeepDBHelper(Context context){
+        super(context, DB_NAME, null, DB_VERSION);
+
     }
 
     @Override
