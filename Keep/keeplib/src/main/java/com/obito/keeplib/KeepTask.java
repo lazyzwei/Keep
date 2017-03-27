@@ -19,7 +19,7 @@ public class KeepTask implements Comparable<KeepTask> {
         IDLE(0, "idle"),
         WAITING(1, "wating"),
         DOWNLOADING(2, "downloading"),
-        DONWLOADED(3, "downloaded"),
+        DOWNLOADED(3, "downloaded"),
         FAILED(4, "failed");
 
 
@@ -185,6 +185,14 @@ public class KeepTask implements Comparable<KeepTask> {
         this.reTryCount = reTryCount;
     }
 
+
+    public synchronized void increaseRetryCount(){
+        ++reTryCount;
+    }
+
+    public synchronized void decreaseRetryCount(){
+        --reTryCount;
+    }
 
     public ContentValues getContentValues() {
         ContentValues cv = new ContentValues();

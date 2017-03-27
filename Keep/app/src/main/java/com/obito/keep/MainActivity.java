@@ -9,6 +9,7 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.obito.keep.adapter.DownLoadListAdapter;
+import com.obito.keeplib.Keep;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +26,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Keep keep = new Keep.Builder(this).setThreads(2).build();
+        Keep.setInstance(keep);
+
 
         btnDownload.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -47,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
         datas.add("item2");
         datas.add("item3");
         adapter.setTask(datas);
+//        adapter.setTask(keep.getAllTaskInDb());
     }
 
     @Override
