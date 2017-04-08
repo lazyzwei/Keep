@@ -66,6 +66,10 @@ public class Keep {
         return workers.size();
     }
 
+    public KeepTask takeFromWaitingQueue() throws InterruptedException {
+        return waitingQueue.take();
+    }
+
     public synchronized void addListener(String url, DownloadListener listener) {
         if (listener == null) return;
         Set<DownloadListener> list = listenerMap.get(url);
@@ -74,6 +78,10 @@ public class Keep {
             listenerMap.put(url, list);
         }
         list.add(listener);
+    }
+
+    public synchronized void removeListener(String url){
+        listenerMap.remove(url);
     }
 
     private void moveTaskToIdleQueue(KeepTask task) {
@@ -105,6 +113,13 @@ public class Keep {
             return true;
         }
         return false;
+    }
+
+    public void addRetryTask(KeepTask task){
+        workingQueue.remove(task);
+        task.setStatus(KeepTask.Status.WAITING.getValue());
+        waitingQueue.offer(task);
+        keepTaskDao.updateTask(task);
     }
 
     public KeepTask addTask(KeepTask task, DownloadListener listener) {
@@ -231,6 +246,69 @@ public class Keep {
 
     public List<KeepTask> getAllTaskInDb() {
         return keepTaskDao.getAllTask();
+    }
+
+
+    public synchronized void downloadStart(KeepTask task){
+        task.setStatus(KeepTask.Status.DOWNLOADING.getValue());
+        workingQueue.offer(task);
+        keepTaskDao.updateTask(task);
+        Set<DownloadListener> listeners = listenerMap.get(task.getUrl());
+        for (DownloadListener listener : listeners){
+            listener.onDownloadStart(task);
+        }
+    }
+
+    public synchronized void downloadProgress(KeepTask task, int progress){
+        task.setProgress(progress);
+        Set<DownloadListener> listeners = listenerMap.get(task.getUrl());
+        for (DownloadListener listener : listeners){
+            listener.onDownloadProgress(task);
+        }
+    }
+
+    public synchronized void downloadSuccess(KeepTask task){
+        task.setStatus(KeepTask.Status.DOWNLOADED.getValue());
+        workingQueue.remove(task);
+        keepTaskDao.updateTask(task);
+        Set<DownloadListener> listeners = listenerMap.get(task.getUrl());
+        for (DownloadListener listener : listeners){
+            listener.onDownloadSuccess(task);
+        }
+        listeners.remove(task.getUrl());
+    }
+
+    public synchronized void downloadFailed(KeepTask task){
+        task.setStatus(KeepTask.Status.FAILED.getValue());
+        workingQueue.remove(task);
+        keepTaskDao.updateTask(task);
+        Set<DownloadListener> listeners = listenerMap.get(task.getUrl());
+        for (DownloadListener listener : listeners){
+            listener.onDownloadFailed(task);
+        }
+        listeners.remove(task.getUrl());
+    }
+
+    public synchronized void downloadDeleted(KeepTask task){
+        Set<DownloadListener> listeners = listenerMap.get(task.getUrl());
+        for (DownloadListener listener : listeners){
+            listener.onDownloadDeleted(task);
+        }
+        listeners.remove(task.getUrl());
+    }
+
+    public synchronized void downloadPaused(KeepTask task){
+        Set<DownloadListener> listeners = listenerMap.get(task.getUrl());
+        for (DownloadListener listener : listeners){
+            listener.onDownloadPaused(task);
+        }
+    }
+
+    public synchronized void downloadResumed(KeepTask task){
+        Set<DownloadListener> listeners = listenerMap.get(task.getUrl());
+        for (DownloadListener listener : listeners){
+            listener.onDownloadResumed(task);
+        }
     }
 
     public static class Builder {

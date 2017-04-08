@@ -33,4 +33,13 @@ public class FileUtils {
         return null;
     }
 
+    public static void deleteFile(File file){
+        //TODO delete file
+    }
+
+    public static boolean reNameFile(File srcFile, String dstPath){
+        //TODO rename file
+        return true;
+    }
+
 }
