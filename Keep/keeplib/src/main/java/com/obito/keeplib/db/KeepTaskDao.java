@@ -51,6 +51,29 @@ public class KeepTaskDao {
         return list;
     }
 
+    public List<KeepTask> getUnFinishedTasks(){
+        List<KeepTask> tasks = new ArrayList<>();
+        Cursor cursor = database.query(KeepDBHelper.TASK_TABLE_NAME,null,KeepDBHelper.Properties.STATUS + " IN (?, ?, ?)",
+                new String[]{String.valueOf(KeepTask.Status.IDLE.getValue()), String.valueOf(KeepTask.Status.WAITING.getValue()),
+                        String.valueOf(KeepTask.Status.DOWNLOADING.getValue())},null,null,null);
+        try {
+            if (cursor != null && cursor.moveToFirst()){
+                do {
+                    KeepTask task = new KeepTask();
+                    task.readEntity(cursor);
+                    tasks.add(task);
+                } while (cursor.moveToNext());
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            if (cursor != null){
+                cursor.close();
+            }
+        }
+        return tasks;
+    }
+
     public void updateTask(KeepTask task) {
         if (task == null) return;
         insertOrReplaceTask(task);

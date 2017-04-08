@@ -8,6 +8,7 @@ import com.obito.keeplib.db.KeepTaskDao;
 import com.obito.keeplib.utils.FileUtils;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -33,7 +34,9 @@ public class Keep {
     private BlockingQueue<KeepTask> waitingQueue = new PriorityBlockingQueue<>();
     private Queue<KeepTask> workingQueue = new ConcurrentLinkedQueue<>();
     private Queue<KeepTask> idleQueue = new ConcurrentLinkedQueue<>();
-    private Map<String,Set<DownloadListener>> listenerMap = new HashMap<>();
+    private Map<String, Set<DownloadListener>> listenerMap = new HashMap<>();
+
+    private List<KeepWorker> workers = new ArrayList<>();
 
     private Keep() {
     }
@@ -49,14 +52,36 @@ public class Keep {
         instance = keep;
     }
 
-    public synchronized void addListener(String url, DownloadListener listener){
+    public void start() {
+        loadTaskFromDb();
+        taskExecutor = Executors.newFixedThreadPool(threads, new KeepThreadFactory());
+        for (int i = 0; i < threads; ++i) {
+            KeepWorker worker = new KeepWorker(this);
+            workers.add(worker);
+            taskExecutor.execute(worker);
+        }
+    }
+
+    public int getCurrentWorkerNum(){
+        return workers.size();
+    }
+
+    public synchronized void addListener(String url, DownloadListener listener) {
         if (listener == null) return;
         Set<DownloadListener> list = listenerMap.get(url);
-        if (list == null){
+        if (list == null) {
             list = new HashSet<>();
             listenerMap.put(url, list);
         }
         list.add(listener);
+    }
+
+    private void moveTaskToIdleQueue(KeepTask task) {
+        workingQueue.remove(task);
+        waitingQueue.remove(task);
+        task.setStatus(KeepTask.Status.IDLE.getValue());
+        idleQueue.offer(task);
+        keepTaskDao.updateTask(task);
     }
 
     private void moveTaskFromIdleToWaitingQueue(KeepTask task) {
@@ -109,7 +134,7 @@ public class Keep {
                 }
             }
         }
-        if (task != null){
+        if (task != null) {
             addListener(task.getUrl(), listener);
         }
         return task;
@@ -195,6 +220,13 @@ public class Keep {
      */
     public KeepTask addTask(String url, KeepTask.FileType fileType, String destLocalPath, DownloadListener listener) {
         return addTask(url, fileType, destLocalPath, listener, KeepTask.Priority.NORMAL);
+    }
+
+    public void loadTaskFromDb() {
+        List<KeepTask> tasks = keepTaskDao.getUnFinishedTasks();
+        for (KeepTask task : tasks) {
+            moveTaskToIdleQueue(task);
+        }
     }
 
     public List<KeepTask> getAllTaskInDb() {

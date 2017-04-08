@@ -29,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
 
         Keep keep = new Keep.Builder(this).setThreads(2).build();
         Keep.setInstance(keep);
+        Keep.getInstance().start();
 
 
         btnDownload.setOnClickListener(new View.OnClickListener() {
