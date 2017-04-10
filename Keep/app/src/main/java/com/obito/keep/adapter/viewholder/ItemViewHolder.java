@@ -6,7 +6,7 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 
 import com.obito.keep.R;
-
+import com.obito.keeplib.KeepTask;
 
 
 public class ItemViewHolder extends RecyclerView.ViewHolder {
@@ -20,7 +20,7 @@ public class ItemViewHolder extends RecyclerView.ViewHolder {
         btnStart = (Button) itemView.findViewById(R.id.btn_start);
     }
 
-    public void bind(int progress){
-        progressBar.setProgress(progress * 10);
+    public void bind(KeepTask task){
+        progressBar.setProgress(task.getProgress());
     }
 }

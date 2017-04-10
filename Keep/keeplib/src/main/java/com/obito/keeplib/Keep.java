@@ -3,6 +3,7 @@ package com.obito.keeplib;
 
 import android.content.Context;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.obito.keeplib.db.KeepTaskDao;
 import com.obito.keeplib.utils.FileUtils;
@@ -22,6 +23,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.PriorityBlockingQueue;
 
 public class Keep {
+
+    private static final String TAG = "Keep";
 
     private static Keep instance;
     private int threads;
@@ -62,7 +65,7 @@ public class Keep {
         }
     }
 
-    public int getCurrentWorkerNum(){
+    public int getCurrentWorkerNum() {
         return workers.size();
     }
 
@@ -80,7 +83,7 @@ public class Keep {
         list.add(listener);
     }
 
-    public synchronized void removeListener(String url){
+    public synchronized void removeListener(String url) {
         listenerMap.remove(url);
     }
 
@@ -115,7 +118,7 @@ public class Keep {
         return false;
     }
 
-    public void addRetryTask(KeepTask task){
+    public void addRetryTask(KeepTask task) {
         workingQueue.remove(task);
         task.setStatus(KeepTask.Status.WAITING.getValue());
         waitingQueue.offer(task);
@@ -123,6 +126,9 @@ public class Keep {
     }
 
     public KeepTask addTask(KeepTask task, DownloadListener listener) {
+        if (task != null) {
+            addListener(task.getUrl(), listener);
+        }
         if (!containsInAllQueue(task)) {
             task.setStatus(KeepTask.Status.WAITING.getValue());
             waitingQueue.offer(task);
@@ -149,9 +155,6 @@ public class Keep {
                 }
             }
         }
-        if (task != null) {
-            addListener(task.getUrl(), listener);
-        }
         return task;
     }
 
@@ -167,9 +170,9 @@ public class Keep {
      */
     public KeepTask addTask(String url, KeepTask.FileType fileType, String destLocalFloder, String saveFileName, DownloadListener listener, KeepTask.Priority priority) {
         String localPath = null;
-        if (TextUtils.isEmpty(destLocalFloder) && TextUtils.isEmpty(saveFileName)) {
+        if (!TextUtils.isEmpty(destLocalFloder) && !TextUtils.isEmpty(saveFileName)) {
             localPath = destLocalFloder + saveFileName;
-        } else if (TextUtils.isEmpty(saveFileName)) {
+        } else if (!TextUtils.isEmpty(saveFileName)) {
             localPath = FileUtils.getLocalFilePathBySpecifiedName(saveFileName, fileType, rootPath);
         }
         return addTask(url, fileType, localPath, listener, priority);
@@ -249,65 +252,86 @@ public class Keep {
     }
 
 
-    public synchronized void downloadStart(KeepTask task){
+    public synchronized void downloadStart(KeepTask task) {
+        Log.d(TAG,"download Start");
         task.setStatus(KeepTask.Status.DOWNLOADING.getValue());
         workingQueue.offer(task);
         keepTaskDao.updateTask(task);
         Set<DownloadListener> listeners = listenerMap.get(task.getUrl());
-        for (DownloadListener listener : listeners){
-            listener.onDownloadStart(task);
+        if (listeners != null) {
+            for (DownloadListener listener : listeners) {
+                listener.onDownloadStart(task);
+            }
         }
     }
 
-    public synchronized void downloadProgress(KeepTask task, int progress){
+    public synchronized void downloadProgress(KeepTask task, int progress) {
+        Log.d(TAG,"download Progress: " + progress);
         task.setProgress(progress);
         Set<DownloadListener> listeners = listenerMap.get(task.getUrl());
-        for (DownloadListener listener : listeners){
-            listener.onDownloadProgress(task);
+        if (listeners != null) {
+            for (DownloadListener listener : listeners) {
+                listener.onDownloadProgress(task);
+            }
         }
     }
 
-    public synchronized void downloadSuccess(KeepTask task){
+    public synchronized void downloadSuccess(KeepTask task) {
+        Log.d(TAG,"download success");
         task.setStatus(KeepTask.Status.DOWNLOADED.getValue());
         workingQueue.remove(task);
         keepTaskDao.updateTask(task);
         Set<DownloadListener> listeners = listenerMap.get(task.getUrl());
-        for (DownloadListener listener : listeners){
-            listener.onDownloadSuccess(task);
+        if (listeners != null) {
+            for (DownloadListener listener : listeners) {
+                listener.onDownloadSuccess(task);
+            }
         }
-        listeners.remove(task.getUrl());
+        removeListener(task.getUrl());
     }
 
-    public synchronized void downloadFailed(KeepTask task){
+    public synchronized void downloadFailed(KeepTask task) {
+        Log.d(TAG,"download Failed");
         task.setStatus(KeepTask.Status.FAILED.getValue());
         workingQueue.remove(task);
         keepTaskDao.updateTask(task);
         Set<DownloadListener> listeners = listenerMap.get(task.getUrl());
-        for (DownloadListener listener : listeners){
-            listener.onDownloadFailed(task);
+        if (listeners != null) {
+            for (DownloadListener listener : listeners) {
+                listener.onDownloadFailed(task);
+            }
         }
-        listeners.remove(task.getUrl());
+        removeListener(task.getUrl());
     }
 
-    public synchronized void downloadDeleted(KeepTask task){
+    public synchronized void downloadDeleted(KeepTask task) {
+        Log.d(TAG,"download Deleted");
         Set<DownloadListener> listeners = listenerMap.get(task.getUrl());
-        for (DownloadListener listener : listeners){
-            listener.onDownloadDeleted(task);
+        if (listeners != null) {
+            for (DownloadListener listener : listeners) {
+                listener.onDownloadDeleted(task);
+            }
         }
-        listeners.remove(task.getUrl());
+        removeListener(task.getUrl());
     }
 
-    public synchronized void downloadPaused(KeepTask task){
+    public synchronized void downloadPaused(KeepTask task) {
+        Log.d(TAG,"download Paused");
         Set<DownloadListener> listeners = listenerMap.get(task.getUrl());
-        for (DownloadListener listener : listeners){
-            listener.onDownloadPaused(task);
+        if (listeners != null) {
+            for (DownloadListener listener : listeners) {
+                listener.onDownloadPaused(task);
+            }
         }
     }
 
-    public synchronized void downloadResumed(KeepTask task){
+    public synchronized void downloadResumed(KeepTask task) {
+        Log.d(TAG,"download Resumed");
         Set<DownloadListener> listeners = listenerMap.get(task.getUrl());
-        for (DownloadListener listener : listeners){
-            listener.onDownloadResumed(task);
+        if (listeners != null) {
+            for (DownloadListener listener : listeners) {
+                listener.onDownloadResumed(task);
+            }
         }
     }
 
@@ -336,7 +360,7 @@ public class Keep {
             keep.threads = threads;
             keep.rootPath = rootPath;
             if (TextUtils.isEmpty(rootPath)) {
-                rootPath = FileUtils.getCacheDir(context);
+                keep.rootPath = FileUtils.getCacheDir(context);
             }
             keep.keepTaskDao = new KeepTaskDao(context);
             return keep;

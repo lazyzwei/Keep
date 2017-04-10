@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 
 import com.obito.keep.R;
 import com.obito.keep.adapter.viewholder.ItemViewHolder;
+import com.obito.keeplib.KeepTask;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,15 +19,20 @@ public class DownLoadListAdapter extends RecyclerView.Adapter {
 
 
     LayoutInflater inflater;
-    List<String> tasks;
+    List<KeepTask> tasks;
 
     public void init(Context context){
         inflater = LayoutInflater.from(context);
         tasks = new ArrayList<>();
     }
 
-    public void setTask(List<String> tasks){
+    public void setTask(List<KeepTask> tasks){
         this.tasks = tasks;
+        notifyDataSetChanged();
+    }
+
+    public void addOneTask(KeepTask task){
+        tasks.add(task);
         notifyDataSetChanged();
     }
 
@@ -39,7 +45,7 @@ public class DownLoadListAdapter extends RecyclerView.Adapter {
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         ItemViewHolder viewHolder = (ItemViewHolder) holder;
-        viewHolder.bind(position);
+        viewHolder.bind(tasks.get(position));
     }
 
     @Override
@@ -47,5 +53,11 @@ public class DownLoadListAdapter extends RecyclerView.Adapter {
         return tasks.size();
     }
 
-
+    public void updateTask(KeepTask task){
+        int pos = tasks.indexOf(task);
+        if (pos >= 0){
+            tasks.set(pos,task);
+            notifyItemChanged(pos);
+        }
+    }
 }
