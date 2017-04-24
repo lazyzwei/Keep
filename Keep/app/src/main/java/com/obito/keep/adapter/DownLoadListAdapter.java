@@ -32,8 +32,12 @@ public class DownLoadListAdapter extends RecyclerView.Adapter {
     }
 
     public void addOneTask(KeepTask task){
+        if (tasks.contains(task)){
+            return;
+        }
         tasks.add(task);
-        notifyDataSetChanged();
+        notifyItemInserted(tasks.size() - 1);
+//        notifyItemChanged(tasks.size() - 1);
     }
 
     @Override

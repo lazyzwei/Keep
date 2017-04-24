@@ -26,11 +26,11 @@ public class KeepWorker implements Runnable {
         this.keep = keep;
     }
 
-    private synchronized void setCurrentTask(KeepTask task) {
+    public synchronized void setCurrentTask(KeepTask task) {
         currentTask = task;
     }
 
-    private synchronized KeepTask getCurrentTask(){
+    public synchronized KeepTask getCurrentTask(){
         return currentTask;
     }
 
@@ -77,7 +77,7 @@ public class KeepWorker implements Runnable {
             downloadedSize = tmpFile.length();
         } else {
             File parentDir = tmpFile.getParentFile();
-            if (!parentDir.exists()) {
+            if (parentDir != null && !parentDir.exists()) {
                 parentDir.mkdir();
             }
             tmpFile.createNewFile();

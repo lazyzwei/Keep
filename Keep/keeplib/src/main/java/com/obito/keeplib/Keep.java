@@ -65,6 +65,57 @@ public class Keep {
         }
     }
 
+    public void pauseTask(String url) {
+        cancelWorkingTask(url);
+        KeepTask task = new KeepTask();
+        task.setUrl(url);
+        KeepTask foundTask = findTaskFromQueue(idleQueue, task);
+        if (foundTask == null) {
+            foundTask = findTaskFromQueue(waitingQueue, task);
+            if (foundTask == null) {
+                foundTask = findTaskFromQueue(workingQueue, task);
+            }
+            if (foundTask != null)
+                moveTaskToIdleQueue(task);
+        }
+        if (foundTask != null) {
+            task = foundTask;
+        }
+        downloadPaused(task);
+    }
+
+    public void resume(String url) {
+        KeepTask task = new KeepTask();
+        task.setUrl(url);
+        KeepTask foundTask = findTaskFromQueue(idleQueue, task);
+        if (foundTask != null) {
+            moveTaskFromIdleToWaitingQueue(foundTask);
+            task = foundTask;
+        } else {
+            foundTask = findTaskFromQueue(waitingQueue,task);
+            if (foundTask == null){
+                foundTask = findTaskFromQueue(workingQueue,task);
+            }
+            if (foundTask == null){
+                task = addTask(url, KeepTask.FileType.FILE,null,null);
+            }else {
+                task = foundTask;
+            }
+        }
+        downloadResumed(task);
+    }
+
+    private void cancelWorkingTask(String url) {
+        KeepTask task = new KeepTask();
+        task.setUrl(url);
+
+        for (KeepWorker worker : workers) {
+            if (task.equals(worker.getCurrentTask())) {
+                worker.setTaskCancelled(true);
+            }
+        }
+    }
+
     public int getCurrentWorkerNum() {
         return workers.size();
     }
@@ -253,7 +304,7 @@ public class Keep {
 
 
     public synchronized void downloadStart(KeepTask task) {
-        Log.d(TAG,"download Start");
+        Log.d(TAG, "download Start");
         task.setStatus(KeepTask.Status.DOWNLOADING.getValue());
         workingQueue.offer(task);
         keepTaskDao.updateTask(task);
@@ -266,7 +317,7 @@ public class Keep {
     }
 
     public synchronized void downloadProgress(KeepTask task, int progress) {
-        Log.d(TAG,"download Progress: " + progress);
+        Log.d(TAG, "download Progress: " + progress);
         task.setProgress(progress);
         Set<DownloadListener> listeners = listenerMap.get(task.getUrl());
         if (listeners != null) {
@@ -277,7 +328,7 @@ public class Keep {
     }
 
     public synchronized void downloadSuccess(KeepTask task) {
-        Log.d(TAG,"download success");
+        Log.d(TAG, "download success");
         task.setStatus(KeepTask.Status.DOWNLOADED.getValue());
         workingQueue.remove(task);
         keepTaskDao.updateTask(task);
@@ -291,7 +342,7 @@ public class Keep {
     }
 
     public synchronized void downloadFailed(KeepTask task) {
-        Log.d(TAG,"download Failed");
+        Log.d(TAG, "download Failed");
         task.setStatus(KeepTask.Status.FAILED.getValue());
         workingQueue.remove(task);
         keepTaskDao.updateTask(task);
@@ -305,7 +356,7 @@ public class Keep {
     }
 
     public synchronized void downloadDeleted(KeepTask task) {
-        Log.d(TAG,"download Deleted");
+        Log.d(TAG, "download Deleted");
         Set<DownloadListener> listeners = listenerMap.get(task.getUrl());
         if (listeners != null) {
             for (DownloadListener listener : listeners) {
@@ -316,7 +367,7 @@ public class Keep {
     }
 
     public synchronized void downloadPaused(KeepTask task) {
-        Log.d(TAG,"download Paused");
+        Log.d(TAG, "download Paused");
         Set<DownloadListener> listeners = listenerMap.get(task.getUrl());
         if (listeners != null) {
             for (DownloadListener listener : listeners) {
@@ -326,7 +377,7 @@ public class Keep {
     }
 
     public synchronized void downloadResumed(KeepTask task) {
-        Log.d(TAG,"download Resumed");
+        Log.d(TAG, "download Resumed");
         Set<DownloadListener> listeners = listenerMap.get(task.getUrl());
         if (listeners != null) {
             for (DownloadListener listener : listeners) {

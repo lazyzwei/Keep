@@ -27,15 +27,7 @@ public class MainActivity extends AppCompatActivity implements DownloadListener 
 
     DownLoadListAdapter adapter;
 
-    private String test = "https://m2-3rd-miner.baijincdn.com/file/117f2ccc3ba7b245480b950c0ba1e5dc?sd" +
-            "k_id=258&task_id=3667922824336900193&business_id=4097&bkt=p3-0000c9cdbcaac0cf67372f13dff718b0d" +
-            "c7e&xcode=11fd2f00a2d126c9daa216761700f42acefa483ffe93e1b89717ec4418c70769&fid=1110174057-250528-618968" +
-            "21366581&time=1491733702&sign=FDTAXGERLBHS-DCb740ccc5511e5e8fedcff06b081203-%2BRic%2FK8LXVLLHSamznbpE692vkQ" +
-            "%3D&to=z1&size=196202083&sta_dx=196202083&sta_cs=11605&sta_ft=mp4&sta_ct=6&sta_mt=5&fm2=MH,Nanjing02," +
-            "Netizen-anywhere,,beijing,cnc&newver=1&newfm=1&secfm=1&flow_ver=3&pkey=0000c9cdbcaac0cf67372f13dff718b0dc7e&" +
-            "sl=73007182&expires=8h&rt=pr&r=643020141&mlogid=2290748241750994017&vuk=1110174057&vbdid=3217641226&fin=Jack.mp4&" +
-            "fn=Jack.mp4&rtype=1&iv=0&dp-logid=2290748241750994017&dp-callid=0.1.1&hps=1&csl=133&csign=PoGY8rXjo6qizHmRkkfI%2FV" +
-            "YpaZM%3D&by=themis";
+    private String test = "http://downloads.rongcloud.cn/SealTalk_by_RongCloud_Android_v1_2_0.apk";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,7 +50,6 @@ public class MainActivity extends AppCompatActivity implements DownloadListener 
                 }
                 Uri uri = Uri.parse(url);
                 String fileName = uri.getLastPathSegment();
-                fileName = "jack.mp4";
                 KeepTask task = Keep.getInstance().addTask(url, KeepTask.FileType.FILE, null, fileName, MainActivity.this);
                 if (task != null) {
                     adapter.addOneTask(task);
@@ -74,13 +65,8 @@ public class MainActivity extends AppCompatActivity implements DownloadListener 
         adapter = new DownLoadListAdapter();
         adapter.init(this);
         recyclerView.setAdapter(adapter);
-
-//        List<String> datas = new ArrayList<>();
-//        datas.add("item1");
-//        datas.add("item2");
-//        datas.add("item3");
-//        adapter.setTask(datas);
         adapter.setTask(keep.getAllTaskInDb());
+        System.out.println("mydebug task size " + keep.getAllTaskInDb().size());
     }
 
     @Override
@@ -138,8 +124,13 @@ public class MainActivity extends AppCompatActivity implements DownloadListener 
     }
 
     @Override
-    public void onDownloadPaused(KeepTask task) {
-
+    public void onDownloadPaused(final KeepTask task) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                adapter.updateTask(task);
+            }
+        });
     }
 
     @Override
