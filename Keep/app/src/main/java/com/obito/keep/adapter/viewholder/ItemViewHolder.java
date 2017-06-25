@@ -1,6 +1,7 @@
 package com.obito.keep.adapter.viewholder;
 
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -11,6 +12,7 @@ import com.obito.keeplib.KeepTask;
 
 
 public class ItemViewHolder extends RecyclerView.ViewHolder {
+    private static String TAG = "ItemViewHolder";
 
     ProgressBar progressBar;
     Button btnStart;
@@ -24,7 +26,7 @@ public class ItemViewHolder extends RecyclerView.ViewHolder {
         btnStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                switch (task.getStatus()){
+                switch (task.getStatus()) {
                     case 2:
                     case 1:
                         //downloading,waiting
@@ -40,12 +42,13 @@ public class ItemViewHolder extends RecyclerView.ViewHolder {
         });
     }
 
-    public void bind(KeepTask task){
+    public void bind(KeepTask task, int pos) {
+        Log.d(TAG, "ItemViewHolder bind task.status: " + task.getStatus() + " pos " + pos);
         this.task = task;
         progressBar.setProgress(task.getProgress());
-        if (task.getStatus() == KeepTask.Status.DOWNLOADING.getValue()){
+        if (task.getStatus() == KeepTask.Status.DOWNLOADING.getValue()) {
             btnStart.setText("stop");
-        }else {
+        } else {
             btnStart.setText("start");
         }
     }

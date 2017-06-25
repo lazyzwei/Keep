@@ -66,7 +66,11 @@ public class MainActivity extends AppCompatActivity implements DownloadListener 
         adapter = new DownLoadListAdapter();
         adapter.init(this);
         recyclerView.setAdapter(adapter);
-        adapter.setTask(keep.getAllTaskInDb());
+        List<KeepTask> tasks = keep.getAllTaskInDb();
+        for (KeepTask task : tasks) {
+            Keep.getInstance().addListener(task.getUrl(), this);
+        }
+        adapter.setTask(tasks);
     }
 
     @Override

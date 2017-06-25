@@ -76,7 +76,7 @@ public class Keep {
                 foundTask = findTaskFromQueue(workingQueue, task);
             }
             if (foundTask != null)
-                moveTaskToIdleQueue(task);
+                moveTaskToIdleQueue(foundTask);
         }
         if (foundTask != null) {
             task = foundTask;
@@ -92,13 +92,13 @@ public class Keep {
             moveTaskFromIdleToWaitingQueue(foundTask);
             task = foundTask;
         } else {
-            foundTask = findTaskFromQueue(waitingQueue,task);
-            if (foundTask == null){
-                foundTask = findTaskFromQueue(workingQueue,task);
+            foundTask = findTaskFromQueue(waitingQueue, task);
+            if (foundTask == null) {
+                foundTask = findTaskFromQueue(workingQueue, task);
             }
-            if (foundTask == null){
-                task = addTask(url, KeepTask.FileType.FILE,null,null);
-            }else {
+            if (foundTask == null) {
+                task = addTask(url, KeepTask.FileType.FILE, null, null);
+            } else {
                 task = foundTask;
             }
         }
@@ -313,6 +313,8 @@ public class Keep {
             for (DownloadListener listener : listeners) {
                 listener.onDownloadStart(task);
             }
+        } else {
+            Log.d(TAG, "download Start listeners == null");
         }
     }
 
@@ -324,6 +326,8 @@ public class Keep {
             for (DownloadListener listener : listeners) {
                 listener.onDownloadProgress(task);
             }
+        } else {
+            Log.d(TAG, "download Progress listeners == null");
         }
     }
 
@@ -337,6 +341,8 @@ public class Keep {
             for (DownloadListener listener : listeners) {
                 listener.onDownloadSuccess(task);
             }
+        } else {
+            Log.d(TAG, "download Success listeners == null");
         }
         removeListener(task.getUrl());
     }
@@ -351,6 +357,8 @@ public class Keep {
             for (DownloadListener listener : listeners) {
                 listener.onDownloadFailed(task);
             }
+        } else {
+            Log.d(TAG, "download Failed listeners == null");
         }
         removeListener(task.getUrl());
     }
@@ -362,6 +370,8 @@ public class Keep {
             for (DownloadListener listener : listeners) {
                 listener.onDownloadDeleted(task);
             }
+        } else {
+            Log.d(TAG, "download Deleted listeners == null");
         }
         removeListener(task.getUrl());
     }
@@ -373,6 +383,8 @@ public class Keep {
             for (DownloadListener listener : listeners) {
                 listener.onDownloadPaused(task);
             }
+        } else {
+            Log.d(TAG, "download Paused listeners == null");
         }
     }
 
@@ -383,6 +395,8 @@ public class Keep {
             for (DownloadListener listener : listeners) {
                 listener.onDownloadResumed(task);
             }
+        } else {
+            Log.d(TAG, "download Resumed listeners == null");
         }
     }
 
