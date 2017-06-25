@@ -37,7 +37,6 @@ public class DownLoadListAdapter extends RecyclerView.Adapter {
         }
         tasks.add(task);
         notifyItemInserted(tasks.size() - 1);
-//        notifyItemChanged(tasks.size() - 1);
     }
 
     @Override

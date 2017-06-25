@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity implements DownloadListener 
 
     DownLoadListAdapter adapter;
 
-    private String test = "http://downloads.rongcloud.cn/SealTalk_by_RongCloud_Android_v1_2_0.apk";
+    private String test = "http://ucdl.25pp.com/fs01/union_pack/Wandoujia_110646_web_direct_homepage.apk";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +50,7 @@ public class MainActivity extends AppCompatActivity implements DownloadListener 
                 }
                 Uri uri = Uri.parse(url);
                 String fileName = uri.getLastPathSegment();
+                System.out.println("Keep MainActivity fileName " + fileName);
                 KeepTask task = Keep.getInstance().addTask(url, KeepTask.FileType.FILE, null, fileName, MainActivity.this);
                 if (task != null) {
                     adapter.addOneTask(task);
@@ -66,7 +67,6 @@ public class MainActivity extends AppCompatActivity implements DownloadListener 
         adapter.init(this);
         recyclerView.setAdapter(adapter);
         adapter.setTask(keep.getAllTaskInDb());
-        System.out.println("mydebug task size " + keep.getAllTaskInDb().size());
     }
 
     @Override
@@ -134,7 +134,12 @@ public class MainActivity extends AppCompatActivity implements DownloadListener 
     }
 
     @Override
-    public void onDownloadResumed(KeepTask task) {
-
+    public void onDownloadResumed(final KeepTask task) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                adapter.updateTask(task);
+            }
+        });
     }
 }
